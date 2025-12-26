@@ -1,28 +1,26 @@
-Workflow Executor (Phase B)
+# Workflow Executor (Phase B)
 
-This service turns assistant decisions into deterministic system executions.
-It is execution-only. No UI. No intent logic.
+This service turns assistant decisions into deterministic system executions. It is execution-only. No UI. No intent logic.
 
-Purpose
+## Purpose
+- Execute workflows only when explicitly instructed  
+- Ensure deterministic, traceable system actions  
+- Act as the final execution layer in the assistant pipeline  
 
-Execute workflows only when explicitly instructed
-
-Ensure deterministic, traceable system actions
-
-Act as the final execution layer in the assistant pipeline
-
-Execution Gate
-
+## Execution Gate
 Execution happens only when:
 
+```
 "decision": "workflow"
-
+```
 
 All other decisions are safely skipped.
 
-API Endpoint
-POST /api/workflow/execute
-Request Format
+## API Endpoint
+`POST /api/workflow/execute`
+
+### Request Format
+```json
 {
   "trace_id": "unique-id",
   "decision": "workflow",
@@ -34,17 +32,20 @@ Request Format
     }
   }
 }
+```
 
-Supported Workflows
-action_type	Description
-task	Task creation
-reminder	Reminder scheduling
-meeting	Meeting scheduling (mocked)
-info	Read-only informational fetch
+## Supported Workflows
+| action_type | Description                  |
+|-------------|------------------------------|
+| task        | Task creation                |
+| reminder    | Reminder scheduling          |
+| meeting     | Meeting scheduling (mocked)  |
+| info        | Read-only informational fetch|
 
 Unsupported actions fail explicitly.
 
-Example Request (Task)
+## Example Request (Task)
+```json
 {
   "trace_id": "task-001",
   "decision": "workflow",
@@ -56,8 +57,10 @@ Example Request (Task)
     }
   }
 }
+```
 
-Example Response
+## Example Response
+```json
 {
   "trace_id": "task-001",
   "status": "success",
@@ -67,22 +70,18 @@ Example Response
     "title": "Submit payroll report"
   }
 }
+```
 
-Run Locally
+## Run Locally
+```bash
 pip install -r requirements.txt
 uvicorn main:app --reload
+```
 
+API docs available at: http://127.0.0.1:8000/docs
 
-API docs available at:
-
-http://127.0.0.1:8000/docs
-
-Notes
-
-No UI dependency
-
-No async fan-out
-
-One request → one execution path
-
-All failures are explicit and traceable via trace_id
+## Notes
+- No UI dependency  
+- No async fan-out  
+- One request → one execution path  
+- All failures are explicit and traceable via `trace_id`
