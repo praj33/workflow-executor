@@ -1,18 +1,17 @@
-from typing import TypedDict, Literal, Optional, Dict, Any
+from typing import Optional, Dict, Any, Literal
+from pydantic import BaseModel, Field
 
-DecisionType = Literal[
-    "respond",
-    "task",
-    "workflow",
-    "insight",
-    "fallback"
-]
 
-class WorkflowData(TypedDict):
-    workflow_type: Literal["workflow"]
-    payload: Dict[str, Any]
+class WorkflowData(BaseModel):
+    workflow_type: Literal["workflow"] = Field(
+        ..., description="Meta indicator for downstream execution"
+    )
+    payload: Dict[str, Any] = Field(
+        ..., description="Structured execution payload"
+    )
 
-class WorkflowExecuteRequest(TypedDict):
-    trace_id: str
-    decision: DecisionType
-    data: Optional[WorkflowData]
+
+class WorkflowExecuteRequest(BaseModel):
+    trace_id: str = Field(..., min_length=1)
+    decision: Literal["respond", "task", "workflow", "insight", "fallback"]
+    data: Optional[WorkflowData] = None

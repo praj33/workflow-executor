@@ -85,3 +85,12 @@ API docs available at: http://127.0.0.1:8000/docs
 - No async fan-out  
 - One request → one execution path  
 - All failures are explicit and traceable via `trace_id`
+
+## Phase C Status
+
+- Strict schema validation enforced
+- Deterministic execution (single-path)
+- Explicit failure states
+- Full traceability via logs
+- Unit tests passing
+- Integration verified with real payloads
