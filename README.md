@@ -7,6 +7,17 @@ This service turns assistant decisions into deterministic system executions. It 
 - Ensure deterministic, traceable system actions  
 - Act as the final execution layer in the assistant pipeline  
 
+## Live Deployment
+
+Base URL:  
+https://workflow-executor-rzfq.onrender.com
+
+Swagger Docs:  
+https://workflow-executor-rzfq.onrender.com/docs
+
+Primary Endpoint:  
+POST /api/workflow/execute
+
 ## Execution Gate
 Execution happens only when:
 
