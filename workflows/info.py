@@ -1,18 +1,15 @@
 from typing import Dict, Any
+from adapters.info_adapter import InfoAdapter
+
+# Single adapter instance (stateless, safe, pluggable)
+adapter = InfoAdapter()
 
 
 def execute_info(payload: Dict[str, Any]) -> Dict[str, Any]:
-    query = payload.get("query")
+    """
+    Informational workflow execution.
 
-    if not query:
-        return {
-            "success": False,
-            "error_code": "missing_info_query",
-            "message": "query is required for informational fetch"
-        }
-
-    return {
-        "success": True,
-        "query": query,
-        "data": f"Mocked information for '{query}'"
-    }
+    Delegates execution to InfoAdapter.
+    No business logic lives here.
+    """
+    return adapter.execute(payload)

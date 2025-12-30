@@ -1,18 +1,15 @@
 from typing import Dict, Any
+from adapters.task_adapter import TaskAdapter
+
+# Single adapter instance (safe, stateless, pluggable)
+adapter = TaskAdapter()
 
 
 def execute_task(payload: Dict[str, Any]) -> Dict[str, Any]:
-    title = payload.get("title")
+    """
+    Task workflow execution.
 
-    if not title:
-        return {
-            "success": False,
-            "error_code": "missing_task_title",
-            "message": "title is required to create a task"
-        }
-
-    return {
-        "success": True,
-        "task_id": "task_001",
-        "title": title
-    }
+    Delegates execution to TaskAdapter.
+    This function contains NO business logic.
+    """
+    return adapter.execute(payload)
