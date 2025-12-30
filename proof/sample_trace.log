@@ -1,0 +1,3 @@
+REQUEST_RECEIVED | trace_id=proof-fail-001 | decision=workflow
+EXECUTION_STARTED | trace_id=proof-fail-001 | action_type=email
+EXECUTION_FAILED | trace_id=proof-fail-001 | action_type=email | error_code=unsupported_action_type
