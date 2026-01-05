@@ -1,10 +1,9 @@
-from fastapi import FastAPI, HTTPException, Request
-from typing import Any
+from fastapi import FastAPI, HTTPException
 import traceback
 
 from contracts.workflow_request import WorkflowExecuteRequest
-from engine.guard import should_execute
-from engine.engine import execute_engine
+from execution_engine.guard import should_execute
+from execution_engine.engine import execute_engine
 from utils.logger import get_logger
 from config.settings import settings
 
@@ -13,7 +12,7 @@ logger = get_logger()
 app = FastAPI(
     title="Workflow Executor",
     description="Deterministic execution layer for assistant workflows",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 
@@ -42,7 +41,7 @@ def execute_workflow(request: WorkflowExecuteRequest):
             return {
                 "trace_id": trace_id,
                 "status": "skipped",
-                "reason": "decision_not_workflow"
+                "reason": "decision_not_workflow",
             }
 
         if not request.data or not request.data.payload:
@@ -51,7 +50,7 @@ def execute_workflow(request: WorkflowExecuteRequest):
             )
             raise HTTPException(
                 status_code=400,
-                detail="missing_workflow_payload"
+                detail="missing_workflow_payload",
             )
 
         payload = request.data.payload
@@ -63,7 +62,7 @@ def execute_workflow(request: WorkflowExecuteRequest):
 
         result = execute_engine(payload)
 
-        if result.get("success"):
+        if result.get("success") is True:
             logger.info(
                 f"EXECUTION_SUCCESS | trace_id={trace_id} | action_type={action_type}"
             )
@@ -78,15 +77,15 @@ def execute_workflow(request: WorkflowExecuteRequest):
         return {
             "trace_id": trace_id,
             "status": status,
-            "execution_result": result
+            "execution_result": result,
         }
 
     except HTTPException:
-        # Explicit, expected failure
+        # Explicit failure
         raise
 
     except Exception as e:
-        # Last-resort failure boundary
+        # Hard safety boundary (never crash outward)
         logger.error(
             f"EXECUTION_CRASH | trace_id={trace_id} | exception={str(e)}"
         )
@@ -98,6 +97,6 @@ def execute_workflow(request: WorkflowExecuteRequest):
             "execution_result": {
                 "success": False,
                 "error_code": "internal_execution_error",
-                "message": "Execution failed due to internal error"
-            }
+                "message": "Execution failed due to internal error",
+            },
         }

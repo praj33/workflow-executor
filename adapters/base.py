@@ -1,12 +1,28 @@
-from typing import Dict, Any
+"""
+Base Adapter — Phase E
+
+All execution adapters MUST inherit this.
+No adapter may bypass this interface.
+"""
+
 from abc import ABC, abstractmethod
+from typing import Dict, Any
 
 
-class ExecutionAdapter(ABC):
+class BaseAdapter(ABC):
     """
-    Base class for all real-world execution adapters.
+    Deterministic execution adapter interface.
     """
 
     @abstractmethod
     def execute(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        pass
+        """
+        Execute a real-world action.
+
+        Must return:
+        {
+          "success": bool,
+          ... adapter-specific fields
+        }
+        """
+        raise NotImplementedError
