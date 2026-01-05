@@ -77,12 +77,14 @@ Unsupported actions fail explicitly.
 
 Phase E extends the executor from logical workflows to real ecosystem actions, while preserving all determinism guarantees.
 
-###Supported Execution Adapters
-Adapter	Status	Description
-WhatsApp	✅	Deterministic message execution (provider or mock)
-Email	✅	Email send via SMTP / API (or hardened mock)
-AI API	✅	External AI call with structured response
-Task System	✅	Persistent task registry / external task tool
+## 🚀 Supported Execution Adapters (Phase E)
+
+| Adapter      | Status | Description                                             |
+|-------------|--------|---------------------------------------------------------|
+| WhatsApp    | ✅     | Deterministic message execution (provider or mock)      |
+| Email       | ✅     | Email sending via SMTP / API (or hardened mock)         |
+| AI API      | ✅     | External AI call with structured, deterministic output |
+| Task System | ✅     | Persistent task registry / external task tool          |
 
 Adapters are:
 
