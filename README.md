@@ -86,27 +86,27 @@ Phase E extends the executor from logical workflows to real ecosystem actions, w
 | AI API      | ✅     | External AI call with structured, deterministic output |
 | Task System | ✅     | Persistent task registry / external task tool          |
 
-Adapters are:
+## Adapters are:
 
-Isolated
+- Isolated
 
-Deterministic
+- Deterministic
 
-Failure-explicit
+- Failure-explicit
 
-Pluggable without contract drift
+- Pluggable without contract drift
 
-### 🔧 Adapter Routing (Phase E)
+## 🔧 Adapter Routing (Phase E)
 
-Adapter selected only by action_type
+- Adapter selected only by action_type
 
-Exactly one adapter executes per request
+- Exactly one adapter executes per request
 
-Unsupported adapters → explicit failure
+- Unsupported adapters → explicit failure
 
-Adapter crashes → explicit failure
+- Adapter crashes → explicit failure
 
-No retries, no hidden fallbacks
+- No retries, no hidden fallbacks
 
 ## Example Request (Task)
 ```json
