@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 import traceback
+from datetime import datetime
 
 from contracts.workflow_request import WorkflowExecuteRequest
 from execution_engine.guard import should_execute
@@ -15,6 +16,9 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# -------------------------------------------------
+# Startup
+# -------------------------------------------------
 
 @app.on_event("startup")
 def startup_event():
@@ -22,6 +26,22 @@ def startup_event():
         f"SERVICE_STARTUP | service={settings.service_name} | env={settings.environment}"
     )
 
+# -------------------------------------------------
+# Health Check (MANDATORY FOR RENDER)
+# -------------------------------------------------
+
+@app.get("/healthz")
+def health_check():
+    return {
+        "status": "ok",
+        "service": settings.service_name,
+        "environment": settings.environment,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+    }
+
+# -------------------------------------------------
+# Workflow Execution Endpoint
+# -------------------------------------------------
 
 @app.post("/api/workflow/execute")
 def execute_workflow(request: WorkflowExecuteRequest):
@@ -33,7 +53,9 @@ def execute_workflow(request: WorkflowExecuteRequest):
     )
 
     try:
+        # -------------------------------------------------
         # Guard: execute ONLY when decision == "workflow"
+        # -------------------------------------------------
         if not should_execute(decision):
             logger.info(
                 f"EXECUTION_SKIPPED | trace_id={trace_id} | reason=decision_not_workflow"
@@ -44,6 +66,9 @@ def execute_workflow(request: WorkflowExecuteRequest):
                 "reason": "decision_not_workflow",
             }
 
+        # -------------------------------------------------
+        # Validate workflow payload
+        # -------------------------------------------------
         if not request.data or not request.data.payload:
             logger.error(
                 f"EXECUTION_FAILED | trace_id={trace_id} | error_code=missing_workflow_payload"
@@ -60,8 +85,14 @@ def execute_workflow(request: WorkflowExecuteRequest):
             f"EXECUTION_STARTED | trace_id={trace_id} | action_type={action_type}"
         )
 
+        # -------------------------------------------------
+        # Execute deterministically
+        # -------------------------------------------------
         result = execute_engine(payload)
 
+        # -------------------------------------------------
+        # Normalize response
+        # -------------------------------------------------
         if result.get("success") is True:
             logger.info(
                 f"EXECUTION_SUCCESS | trace_id={trace_id} | action_type={action_type}"
@@ -81,11 +112,13 @@ def execute_workflow(request: WorkflowExecuteRequest):
         }
 
     except HTTPException:
-        # Explicit failure
+        # Explicit contract failure
         raise
 
     except Exception as e:
-        # Hard safety boundary (never crash outward)
+        # -------------------------------------------------
+        # HARD SAFETY BOUNDARY — NEVER CRASH OUTWARD
+        # -------------------------------------------------
         logger.error(
             f"EXECUTION_CRASH | trace_id={trace_id} | exception={str(e)}"
         )
