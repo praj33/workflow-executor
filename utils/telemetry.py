@@ -17,7 +17,13 @@ def emit_execution_event(
 ):
     """
     Non-blocking execution telemetry emitter.
-    NEVER raises.
+
+    GUARANTEES:
+    - Append-only
+    - Immutable event shape
+    - No retries
+    - No dependency on downstream storage
+    - NEVER raises
     """
 
     event = {
@@ -32,15 +38,16 @@ def emit_execution_event(
     if error_code:
         event["error_code"] = error_code
 
-    if extra:
-        event["extra"] = extra  # must be non-sensitive
+    # Guard against unsafe extras
+    if isinstance(extra, dict) and extra:
+        event["extra"] = extra  # must be non-sensitive, flat, JSON-safe
 
     try:
-        # Phase-1: log-based emission (InsightFlow consumes logs)
+        # Phase-1: log-based emission (InsightFlow / Bucket consumers)
         logger.info(f"EXECUTION_EVENT | {event}")
 
-        # Phase-2 (later): push to Kafka / HTTP / InsightFlow API
+        # Phase-2 (future): push to Kafka / HTTP / InsightFlow API
 
     except Exception:
-        # Telemetry must NEVER break execution
+        # Telemetry must NEVER affect execution correctness
         logger.error("TELEMETRY_EMIT_FAILED", exc_info=True)

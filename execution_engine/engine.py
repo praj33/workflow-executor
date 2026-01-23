@@ -34,17 +34,13 @@ def execute_engine(payload: Dict[str, Any]) -> Dict[str, Any]:
     action_type = payload.get("action_type")
     product = payload.get("product", "unknown")
 
+    adapter_name = "none"  # MUST exist for safe exception handling
+
     # ------------------------------
     # Mandatory guards
     # ------------------------------
 
     if not trace_id:
-        result = {
-            "success": False,
-            "error_code": "missing_trace_id",
-            "message": "trace_id is required for execution",
-        }
-
         emit_execution_event(
             trace_id="unknown",
             action_type=action_type or "unknown",
@@ -54,16 +50,13 @@ def execute_engine(payload: Dict[str, Any]) -> Dict[str, Any]:
             error_code="missing_trace_id",
         )
 
-        return result
-
-    if not action_type:
-        result = {
+        return {
             "success": False,
-            "trace_id": trace_id,
-            "error_code": "missing_action_type",
-            "message": "payload.action_type is required",
+            "error_code": "missing_trace_id",
+            "message": "trace_id is required for execution",
         }
 
+    if not action_type:
         emit_execution_event(
             trace_id=trace_id,
             action_type="unknown",
@@ -73,7 +66,12 @@ def execute_engine(payload: Dict[str, Any]) -> Dict[str, Any]:
             error_code="missing_action_type",
         )
 
-        return result
+        return {
+            "success": False,
+            "trace_id": trace_id,
+            "error_code": "missing_action_type",
+            "message": "payload.action_type is required",
+        }
 
     # ------------------------------
     # Adapter resolution
@@ -82,13 +80,6 @@ def execute_engine(payload: Dict[str, Any]) -> Dict[str, Any]:
     adapter = get_adapter(action_type)
 
     if adapter is None:
-        result = {
-            "success": False,
-            "trace_id": trace_id,
-            "error_code": "unsupported_action_type",
-            "message": f"action_type '{action_type}' is not supported",
-        }
-
         emit_execution_event(
             trace_id=trace_id,
             action_type=action_type,
@@ -98,9 +89,27 @@ def execute_engine(payload: Dict[str, Any]) -> Dict[str, Any]:
             error_code="unsupported_action_type",
         )
 
-        return result
+        return {
+            "success": False,
+            "trace_id": trace_id,
+            "error_code": "unsupported_action_type",
+            "message": f"action_type '{action_type}' is not supported",
+        }
 
     adapter_name = adapter.__class__.__name__
+
+    # ------------------------------
+    # Execution START (MANDATORY TRACE EVENT)
+    # ------------------------------
+
+    emit_execution_event(
+        trace_id=trace_id,
+        action_type=action_type,
+        adapter=adapter_name,
+        status="started",
+        product=product,
+        error_code=None,
+    )
 
     # ------------------------------
     # Deterministic execution
@@ -111,13 +120,6 @@ def execute_engine(payload: Dict[str, Any]) -> Dict[str, Any]:
 
         # Adapter contract enforcement
         if not isinstance(result, dict) or "success" not in result:
-            failure = {
-                "success": False,
-                "trace_id": trace_id,
-                "error_code": "invalid_adapter_response",
-                "message": "adapter returned invalid response structure",
-            }
-
             emit_execution_event(
                 trace_id=trace_id,
                 action_type=action_type,
@@ -127,7 +129,12 @@ def execute_engine(payload: Dict[str, Any]) -> Dict[str, Any]:
                 error_code="invalid_adapter_response",
             )
 
-            return failure
+            return {
+                "success": False,
+                "trace_id": trace_id,
+                "error_code": "invalid_adapter_response",
+                "message": "adapter returned invalid response structure",
+            }
 
         # Telemetry — success or failure (explicit)
         emit_execution_event(
