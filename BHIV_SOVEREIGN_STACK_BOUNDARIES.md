@@ -120,9 +120,9 @@ BHIV Core → Enforcement → Workflow Executor → Adapters → BHIV Bucket
     └───────────────────────────────────────────────────────────┘
 ```
 
-Authority and data move strictly forward.
-Truth is recorded but never fed back.
-
+- Authority and data move strictly forward.
+- Truth is recorded but never fed back.
+```
 BHIV Core
   → (intent)
 Enforcement Engine
@@ -133,12 +133,13 @@ Adapters
   → (side-effects)
 BHIV Bucket
   → (immutable record only)
+```
 
-No signal flows backward.
-No stored truth influences future authority.
-No layer may absorb another’s role.
-No layer may override another’s authority.
-No backward influence is permitted.
+- No signal flows backward.
+- No stored truth influences future authority.
+- No layer may absorb another’s role.
+- No layer may override another’s authority.
+- No backward influence is permitted.
 
 ---
 
